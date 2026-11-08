@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leben in Deutschland – Ôn thi</title>
+<meta name="theme-color" content="#1d2b4f">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f5f3ee;--card:#fff;--ink:#1b1f2a;--mute:#6b7080;--line:#e3e0d8;--brand:#1d2b4f;--gold:#e0a526;--ok:#1f8a4c;--okbg:#e4f4ea;--bad:#c23a32;--badbg:#fbe7e5;--sel:#eef1f8}
+@media (prefers-color-scheme:dark){:root{--bg:#12141a;--card:#1b1e27;--ink:#eceef3;--mute:#9aa0ae;--line:#2c303c;--brand:#9fb4ea;--gold:#f0b93a;--ok:#4cc27e;--okbg:#173225;--bad:#ef6a61;--badbg:#3a1d1b;--sel:#232838}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:12px 16px calc(10px);padding-top:max(12px,env(safe-area-inset-top))}
+@media (prefers-color-scheme:dark){header{background:#1d2b4f}}
+header h1{margin:0;font-size:17px;letter-spacing:.2px}
+header .sub{font-size:12px;opacity:.75}
+.flag{display:inline-block;width:18px;height:12px;vertical-align:-1px;margin-right:6px;background:linear-gradient(#000 33%,#dd0000 33% 66%,#ffce00 66%);border-radius:2px}
+nav{display:flex;gap:6px;margin-top:10px;overflow-x:auto}
+nav button{flex:1;min-width:0;border:0;border-radius:10px;padding:9px 6px;font:600 14px system-ui;background:rgba(255,255,255,.12);color:#fff;white-space:nowrap}
+nav button.on{background:#fff;color:#1d2b4f}
+main{max-width:720px;margin:0 auto;padding:16px 16px 100px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--sel);color:var(--brand)}
+.chip.bw{background:#fff3d6;color:#8a5a00}
+@media (prefers-color-scheme:dark){.chip.bw{background:#3a2e12;color:#f0c96a}}
+.q{font-size:18px;font-weight:600;margin:10px 0 12px}
+.qimg{width:100%;border-radius:10px;margin:0 0 12px;background:#fff;border:1px solid var(--line)}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:12px;margin:8px 0;font:inherit;cursor:pointer}
+.opt .k{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--mute)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.ok .k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--badbg)} .opt.bad .k{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt.pick{border-color:var(--brand);background:var(--sel)} .opt.pick .k{background:var(--brand);border-color:var(--brand);color:var(--card)}
+.opt:disabled{cursor:default}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:600 15px system-ui;background:var(--brand);color:var(--card);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand);border:1.5px solid var(--line)}
+.btn.gold{background:var(--gold);color:#1b1f2a}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px max(10px,env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center;z-index:4}
+.bar .btn{flex:1;max-width:220px}
+.prog{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin:6px 0 2px}
+.prog>i{display:block;height:100%;background:var(--gold)}
+.mute{color:var(--mute);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:24px}
+input[type=search],select{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.list .item{padding:12px 0;border-bottom:1px solid var(--line)}
+.list .item:last-child{border:0}
+.list .ans{color:var(--ok);font-weight:600;margin-top:4px}
+.list img{max-width:100%;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
+.big{font-size:44px;font-weight:800;margin:6px 0}
+.pass{color:var(--ok)} .fail{color:var(--bad)}
+.grid33{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:10px}
+.grid33 button{aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-size:11px;padding:0}
+.grid33 .d{background:var(--sel);border-color:var(--brand)} .grid33 .cur{outline:2px solid var(--gold)}
+.grid33 .r{background:var(--okbg);border-color:var(--ok)} .grid33 .w{background:var(--badbg);border-color:var(--bad)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 12px;font:600 13px system-ui}
+.seg button.on{background:var(--brand);color:var(--card);border-color:var(--brand)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="flag"></span>Leben in Deutschland</h1>
+  <div class="sub">310 câu chính thức BAMF · 300 chung + 10 Baden-Württemberg</div>
+  <nav>
+    <button data-v="home" class="on">Tổng quan</button>
+    <button data-v="practice">Luyện</button>
+    <button data-v="exam">Thi thử</button>
+    <button data-v="list">Tra cứu</button>
+  </nav>
+</header>
+<main id="app"></main>
+<div class="bar hide" id="bar"></div>
+<script src="data.js"></script>
+<script>
+const Q = window.QUESTIONS, byId = Object.fromEntries(Q.map(q=>[q.id,q]));
+const $ = s=>document.querySelector(s), app=$('#app'), bar=$('#bar');
+const store = {
+  get(k,d){try{const v=localStorage.getItem('lid_'+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('lid_'+k,JSON.stringify(v))}catch(e){}}
+};
+let S = store.get('stats',{});           // id -> {r:rightCount,w:wrongCount,last:0/1}
+const save=()=>store.set('stats',S);
+const mark=(id,ok)=>{const s=S[id]||{r:0,w:0};ok?s.r++:s.w++;s.last=ok?1:0;S[id]=s;save()};
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const label=q=>q.bw?`BW ${q.n}`:`Câu ${q.n}`;
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const L='ABCD';
+
+function nav(v){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));bar.classList.add('hide');clearInterval(timer);window.scrollTo(0,0);({home,practice,exam,list})[v]()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));
+
+/* ---------- Tổng quan ---------- */
+function home(){
+  const seen=Q.filter(q=>S[q.id]).length, known=Q.filter(q=>S[q.id]&&S[q.id].last===1).length, wrong=Q.filter(q=>S[q.id]&&S[q.id].last===0).length;
+  const best=store.get('best',null), hist=store.get('exams',[]);
+  app.innerHTML=`
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><b>Tiến độ</b><span class="mute">${known}/${Q.length} câu đã trả lời đúng</span></div>
+    <div class="prog"><i style="width:${known/Q.length*100}%"></i></div>
+    <div class="stats" style="margin-top:12px">
+      <div><b>${seen}</b><span class="mute">đã làm</span></div>
+      <div><b style="color:var(--ok)">${known}</b><span class="mute">đúng lần gần nhất</span></div>
+      <div><b style="color:var(--bad)">${wrong}</b><span class="mute">còn sai</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <b>Bắt đầu nhanh</b>
+    <div style="display:grid;gap:8px;margin-top:10px">
+      <button class="btn" onclick="startPractice('new')">Luyện câu chưa làm (${Q.length-seen})</button>
+      <button class="btn ghost" onclick="startPractice('wrong')" ${wrong?'':'disabled'}>Ôn lại câu sai (${wrong})</button>
+      <button class="btn gold" onclick="nav('exam')">Thi thử 33 câu</button>
+    </div>
+  </div>
+  <div class="card">
+    <b>Bài thi thật</b>
+    <p class="mute" style="margin:6px 0 0">33 câu (30 câu chung + 3 câu Baden-Württemberg), 60 phút. Đúng <b>15</b> câu là đậu "Leben in Deutschland" (cho Niederlassungserlaubnis); đúng <b>17</b> câu là đậu Einbürgerungstest.</p>
+    ${hist.length?`<p class="mute" style="margin:10px 0 0">Thi thử gần đây: ${hist.slice(-5).reverse().map(h=>`<b class="${h>=17?'pass':h>=15?'':'fail'}">${h}/33</b>`).join(' · ')}</p>`:''}
+  </div>
+  <div class="card mute" style="font-size:12px">Câu hỏi lấy từ <i>Gesamtfragenkatalog</i> của BAMF (Stand 07.05.2025). Đáp án được đánh dấu theo bộ đề chính thức. Câu 72/73/75 (Thủ tướng, Tổng thống, các đảng lớn nhất) phụ thuộc thời điểm, nên kiểm tra lại trước khi thi. Tiến độ chỉ lưu trên trình duyệt của máy này.
+    <div style="margin-top:8px"><button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="if(confirm('Xoá toàn bộ tiến độ?')){S={};save();store.set('exams',[]);home()}">Xoá tiến độ</button></div>
+  </div>`;
+}
+
+/* ---------- Luyện ---------- */
+let P={mode:'order',list:[],i:0,answered:null,right:0};
+function practice(){
+  const modes=[['order','Theo thứ tự'],['random','Ngẫu nhiên'],['new','Chưa làm'],['wrong','Câu sai'],['bw','Baden-Württ.']];
+  app.innerHTML=`<div class="card"><b>Chọn cách luyện</b><div class="seg" style="margin-top:10px">${modes.map(([k,t])=>`<button data-m="${k}" class="${P.mode===k?'on':''}">${t}</button>`).join('')}</div>
+  <div id="fromWrap" class="row" style="margin-top:12px"><span class="mute">Bắt đầu từ câu</span><input id="from" type="number" min="1" max="300" value="${store.get('pos',1)}" style="width:90px;padding:8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit"></div>
+  <button class="btn" style="width:100%;margin-top:12px" id="go">Bắt đầu</button></div>`;
+  app.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{P.mode=b.dataset.m;practice()});
+  $('#fromWrap').classList.toggle('hide',P.mode!=='order');
+  $('#go').onclick=()=>startPractice(P.mode,+($('#from')?.value||1));
+}
+function startPractice(mode,from=1){
+  P.mode=mode;let l=Q;
+  if(mode==='random')l=shuffle(Q);
+  if(mode==='new')l=Q.filter(q=>!S[q.id]);
+  if(mode==='wrong')l=shuffle(Q.filter(q=>S[q.id]&&S[q.id].last===0));
+  if(mode==='bw')l=Q.filter(q=>q.bw);
+  P.list=l;P.i=0;P.right=0;
+  if(mode==='order'){const k=Q.findIndex(q=>!q.bw&&q.n===from);P.i=k<0?0:k}
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==='practice'));
+  if(!l.length){app.innerHTML=`<div class="card">Không còn câu nào trong mục này 🎉</div>`;bar.classList.add('hide');return}
+  showP();
+}
+function showP(){
+  const q=P.list[P.i];P.answered=null;
+  if(P.mode==='order'&&!q.bw)store.set('pos',q.n);
+  app.innerHTML=`<div class="card">
+   <div class="row" style="justify-content:space-between"><span class="row"><span class="chip ${q.bw?'bw':''}">${label(q)}</span>${S[q.id]?`<span class="mute">${S[q.id].r}✓ ${S[q.id].w}✗</span>`:''}</span><span class="mute">${P.i+1}/${P.list.length}</span></div>
+   <div class="prog"><i style="width:${(P.i+1)/P.list.length*100}%"></i></div>
+   <div class="q">${esc(q.q)}</div>
+   ${q.img?`<img class="qimg" src="${q.img}" alt="">`:''}
+   <div id="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+   <div id="fb" class="mute" style="min-height:20px;margin-top:6px"></div>
+  </div>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answerP(+b.dataset.i));
+  bar.classList.remove('hide');
+  bar.innerHTML=`<button class="btn ghost" id="prev" ${P.i?'':'disabled'}>‹ Trước</button><button class="btn ghost" id="show">Xem đáp án</button><button class="btn" id="next">Tiếp ›</button>`;
+  $('#prev').onclick=()=>{P.i--;showP()};
+  $('#show').onclick=()=>reveal(q,null);
+  $('#next').onclick=nextP;
+}
+function reveal(q,pick){
+  app.querySelectorAll('.opt').forEach(b=>{const i=+b.dataset.i;b.disabled=true;if(i===q.a)b.classList.add('ok');else if(i===pick)b.classList.add('bad')});
+}
+function answerP(i){
+  if(P.answered!==null)return;const q=P.list[P.i];P.answered=i;const ok=i===q.a;
+  mark(q.id,ok);if(ok)P.right++;reveal(q,i);
+  $('#fb').innerHTML=ok?'<b style="color:var(--ok)">Đúng rồi!</b>':`<b style="color:var(--bad)">Sai.</b> Đáp án đúng: <b>${L[q.a]}</b>`;
+  if(ok&&store.get('auto',true))setTimeout(()=>{if(P.answered===i&&P.list[P.i]===q)nextP()},700);
+}
+function nextP(){
+  if(P.i<P.list.length-1){P.i++;showP();window.scrollTo(0,0)}
+  else{bar.classList.add('hide');app.innerHTML=`<div class="card" style="text-align:center"><div class="mute">Hết lượt luyện</div><div class="big">${P.right}/${P.list.length}</div><button class="btn" onclick="nav('home')">Về tổng quan</button></div>`}
+}
+
+/* ---------- Thi thử ---------- */
+let E=null,timer=null;
+function exam(){
+  if(E&&!E.done){showE();return}
+  app.innerHTML=`<div class="card"><b>Thi thử giống bài thi thật</b>
+  <p class="mute">33 câu ngẫu nhiên: 30 câu chung + 3 câu Baden-Württemberg. Thời gian 60 phút. Không hiện đáp án cho đến khi nộp bài.</p>
+  <button class="btn gold" style="width:100%" onclick="newExam()">Bắt đầu thi</button></div>`;
+}
+function newExam(){
+  const gen=shuffle(Q.filter(q=>!q.bw)).slice(0,30), bw=shuffle(Q.filter(q=>q.bw)).slice(0,3);
+  E={qs:[...gen,...bw],ans:Array(33).fill(null),i:0,end:Date.now()+3600e3,done:false};showE();
+}
+function tick(){const s=Math.max(0,Math.round((E.end-Date.now())/1000));const t=$('#tm');if(t)t.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;if(!s)finishE()}
+function showE(){
+  const q=E.qs[E.i],a=E.ans[E.i];
+  app.innerHTML=`<div class="card">
+   <div class="row" style="justify-content:space-between"><span class="chip ${q.bw?'bw':''}">Câu ${E.i+1}/33 · ${label(q)}</span><b id="tm"></b></div>
+   <div class="q">${esc(q.q)}</div>
+   ${q.img?`<img class="qimg" src="${q.img}" alt="">`:''}
+   ${q.o.map((o,i)=>`<button class="opt ${a===i?'pick':''}" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}</span></button>`).join('')}
+   <div class="grid33">${E.qs.map((_,k)=>`<button data-k="${k}" class="${E.ans[k]!==null?'d':''} ${k===E.i?'cur':''}">${k+1}</button>`).join('')}</div>
+  </div>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{E.ans[E.i]=+b.dataset.i;if(E.i<32){E.i++;}showE()});
+  app.querySelectorAll('.grid33 button').forEach(b=>b.onclick=()=>{E.i=+b.dataset.k;showE()});
+  bar.classList.remove('hide');
+  const left=E.ans.filter(x=>x===null).length;
+  bar.innerHTML=`<button class="btn ghost" id="ep" ${E.i?'':'disabled'}>‹</button><button class="btn gold" id="ef">Nộp bài${left?` (còn ${left})`:''}</button><button class="btn ghost" id="en" ${E.i<32?'':'disabled'}>›</button>`;
+  $('#ep').onclick=()=>{E.i--;showE()};$('#en').onclick=()=>{E.i++;showE()};
+  $('#ef').onclick=()=>{if(!left||confirm(`Còn ${left} câu chưa trả lời. Nộp bài?`))finishE()};
+  clearInterval(timer);tick();timer=setInterval(tick,1000);
+}
+function finishE(){
+  clearInterval(timer);E.done=true;bar.classList.add('hide');
+  let r=0;E.qs.forEach((q,k)=>{const ok=E.ans[k]===q.a;if(ok)r++;if(E.ans[k]!==null)mark(q.id,ok)});
+  const h=store.get('exams',[]);h.push(r);store.set('exams',h.slice(-20));
+  const res=r>=17?['pass','Đậu cả Einbürgerungstest (≥17)']:r>=15?['pass','Đậu Leben in Deutschland (≥15)']:['fail','Chưa đậu (cần ≥15)'];
+  app.innerHTML=`<div class="card" style="text-align:center"><div class="big ${res[0]}">${r}/33</div><b class="${res[0]}">${res[1]}</b>
+   <div style="display:flex;gap:8px;justify-content:center;margin-top:12px"><button class="btn gold" onclick="newExam()">Thi lại</button><button class="btn ghost" onclick="nav('home')">Tổng quan</button></div></div>
+   <div class="card list"><b>Xem lại</b>${E.qs.map((q,k)=>{const ok=E.ans[k]===q.a;return `<div class="item"><div class="row"><span class="chip ${q.bw?'bw':''}">${k+1} · ${label(q)}</span><b class="${ok?'pass':'fail'}">${ok?'✓':'✗'}</b></div><div style="margin-top:6px">${esc(q.q)}</div>${q.img?`<img src="${q.img}" alt="">`:''}${!ok?`<div class="mute" style="margin-top:4px">Bạn chọn: ${E.ans[k]===null?'—':esc(q.o[E.ans[k]])}</div>`:''}<div class="ans">✓ ${esc(q.o[q.a])}</div></div>`}).join('')}</div>`;
+}
+
+/* ---------- Tra cứu ---------- */
+function list(){
+  app.innerHTML=`<div class="card"><input type="search" id="s" placeholder="Tìm từ khoá hoặc số câu…"><div class="seg" style="margin-top:10px" id="lf"><button data-f="all" class="on">Tất cả</button><button data-f="wrong">Câu sai</button><button data-f="bw">Baden-Württ.</button></div></div><div class="card list" id="res"></div>`;
+  let f='all';const s=$('#s');
+  const render=()=>{const t=s.value.trim().toLowerCase();let l=Q;
+    if(f==='wrong')l=l.filter(q=>S[q.id]&&S[q.id].last===0);if(f==='bw')l=l.filter(q=>q.bw);
+    if(t)l=l.filter(q=>/^\d+$/.test(t)?String(q.n)===t:(q.q+' '+q.o.join(' ')).toLowerCase().includes(t));
+    $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}</div></div>`).join(''):'<span class="mute">Không có kết quả</span>'};
+  s.oninput=render;app.querySelectorAll('#lf button').forEach(b=>b.onclick=()=>{f=b.dataset.f;app.querySelectorAll('#lf button').forEach(x=>x.classList.toggle('on',x===b));render()});render();
+}
+home();
+</script>
+</body>
+</html>
