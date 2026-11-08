@@ -8,3 +8,16 @@ App ôn thi "Leben in Deutschland" / Einbürgerungstest: 310 câu chính thức 
 - Tiến độ được lưu trên trình duyệt; có thể "Thêm vào màn hình chính" trên điện thoại
 
 Nguồn câu hỏi: BAMF Gesamtfragenkatalog (Stand 07.05.2025).
+
+## Đăng nhập Google & đồng bộ (Firebase)
+
+App chạy bình thường khi `firebase-config.js` để `null`. Để bật đăng nhập Google và lưu tiến độ lên mây:
+
+1. Tạo project ở https://console.firebase.google.com
+2. **Build → Authentication → Get started → Sign-in method → Google → Enable**
+3. **Authentication → Settings → Authorized domains → Add domain:** `dothanhdatdo.github.io`
+4. **Build → Firestore Database → Create database** (chọn vùng `europe-west3` Frankfurt, Production mode)
+5. **Firestore → Rules:** dán nội dung file `firestore.rules` → Publish
+6. **Project settings → Your apps → Web (</>)** → đăng ký app → copy `firebaseConfig` vào `firebase-config.js`
+
+Dữ liệu mỗi người nằm ở `users/{uid}`; quy tắc bảo mật chỉ cho phép người đó đọc/ghi dữ liệu của chính mình.

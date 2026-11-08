@@ -80,15 +80,26 @@ body.novi .vi{display:none}
 <main id="app"></main>
 <div class="bar hide" id="bar"></div>
 <script src="data.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 const Q = window.QUESTIONS, byId = Object.fromEntries(Q.map(q=>[q.id,q]));
 const $ = s=>document.querySelector(s), app=$('#app'), bar=$('#bar');
 const store = {
   get(k,d){try{const v=localStorage.getItem('lid_'+k);return v?JSON.parse(v):d}catch(e){return d}},
-  set(k,v){try{localStorage.setItem('lid_'+k,JSON.stringify(v))}catch(e){}}
+  set(k,v,quiet){try{localStorage.setItem('lid_'+k,JSON.stringify(v))}catch(e){}if(!quiet&&['stats','exams','pos'].includes(k))CloudUI.onChange()}
 };
 let S = store.get('stats',{});           // id -> {r:rightCount,w:wrongCount,last:0/1}
 const save=()=>store.set('stats',S);
+/* ---------- Tài khoản / đồng bộ (cloud.js gắn vào đây) ---------- */
+const CloudUI={st:{enabled:false},onChange(){},login(){},logout(){},
+  getData(){return{stats:S,exams:store.get('exams',[]),pos:store.get('pos',1)}},
+  setData(d){S=d.stats||{};store.set('stats',S,1);store.set('exams',d.exams||[],1);store.set('pos',d.pos||1,1);if($('nav button.on')?.dataset.v==='home')home()},
+  set(x){this.st={...this.st,...x};const el=$('#acct');if(el){el.innerHTML=acctHTML();el.classList.toggle('hide',!this.st.enabled)}}};
+function acctHTML(){const s=CloudUI.st;
+  if(!s.enabled)return '';
+  if(!s.user)return `<div class="row" style="justify-content:space-between"><div><b>Đồng bộ tiến độ</b><div class="mute">Đăng nhập để học trên nhiều máy mà không mất tiến độ.</div></div><button class="btn" onclick="CloudUI.login()">Đăng nhập Google</button></div>${s.error?`<div class="mute" style="color:var(--bad);margin-top:6px">${esc(s.error)}</div>`:''}`;
+  const u=s.user;return `<div class="row" style="justify-content:space-between"><div class="row">${u.photoURL?`<img src="${u.photoURL}" referrerpolicy="no-referrer" style="width:36px;height:36px;border-radius:50%">`:''}<div><b>${esc(u.displayName||u.email||'')}</b><div class="mute">${s.error?`<span style="color:var(--bad)">${esc(s.error)}</span>`:s.syncing?'Đang đồng bộ…':s.synced?'Đã đồng bộ lúc '+s.synced.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):''}</div></div></div><button class="btn ghost" onclick="CloudUI.logout()">Đăng xuất</button></div>`}
+window.CloudUI=CloudUI;
 const mark=(id,ok)=>{const s=S[id]||{r:0,w:0};ok?s.r++:s.w++;s.last=ok?1:0;S[id]=s;save()};
 const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const label=q=>q.bw?`BW ${q.n}`:`Câu ${q.n}`;
@@ -108,6 +119,7 @@ function home(){
   const seen=Q.filter(q=>S[q.id]).length, known=Q.filter(q=>S[q.id]&&S[q.id].last===1).length, wrong=Q.filter(q=>S[q.id]&&S[q.id].last===0).length;
   const best=store.get('best',null), hist=store.get('exams',[]);
   app.innerHTML=`
+  <div class="card ${CloudUI.st.enabled?'':'hide'}" id="acct">${acctHTML()}</div>
   <div class="card">
     <div class="row" style="justify-content:space-between"><b>Tiến độ</b><span class="mute">${known}/${Q.length} câu đã trả lời đúng</span></div>
     <div class="prog"><i style="width:${known/Q.length*100}%"></i></div>
@@ -130,7 +142,7 @@ function home(){
     <p class="mute" style="margin:6px 0 0">33 câu (30 câu chung + 3 câu Baden-Württemberg), 60 phút. Đúng <b>15</b> câu là đậu "Leben in Deutschland" (cho Niederlassungserlaubnis); đúng <b>17</b> câu là đậu Einbürgerungstest.</p>
     ${hist.length?`<p class="mute" style="margin:10px 0 0">Thi thử gần đây: ${hist.slice(-5).reverse().map(h=>`<b class="${h>=17?'pass':h>=15?'':'fail'}">${h}/33</b>`).join(' · ')}</p>`:''}
   </div>
-  <div class="card mute" style="font-size:12px">Câu hỏi lấy từ <i>Gesamtfragenkatalog</i> của BAMF (Stand 07.05.2025). Đáp án được đánh dấu theo bộ đề chính thức. Câu 72/73/75 (Thủ tướng, Tổng thống, các đảng lớn nhất) phụ thuộc thời điểm, nên kiểm tra lại trước khi thi. Tiến độ chỉ lưu trên trình duyệt của máy này.
+  <div class="card mute" style="font-size:12px">Câu hỏi lấy từ <i>Gesamtfragenkatalog</i> của BAMF (Stand 07.05.2025). Đáp án được đánh dấu theo bộ đề chính thức. Câu 72/73/75 (Thủ tướng, Tổng thống, các đảng lớn nhất) phụ thuộc thời điểm, nên kiểm tra lại trước khi thi. ${CloudUI.st.user?'Tiến độ được lưu trên máy này và đồng bộ với tài khoản Google.':'Tiến độ lưu trên trình duyệt của máy này'+(CloudUI.st.enabled?'; đăng nhập để đồng bộ giữa các máy.':'.')}
     <div style="margin-top:8px"><button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="if(confirm('Xoá toàn bộ tiến độ?')){S={};save();store.set('exams',[]);home()}">Xoá tiến độ</button></div>
   </div>`;
 }
@@ -243,5 +255,6 @@ function list(){
 }
 home();
 </script>
+<script type="module" src="cloud.js"></script>
 </body>
 </html>
