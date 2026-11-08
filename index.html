@@ -60,11 +60,15 @@ input[type=search],select{width:100%;padding:11px 12px;border-radius:12px;border
 .seg button{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 12px;font:600 13px system-ui}
 .seg button.on{background:var(--brand);color:var(--card);border-color:var(--brand)}
 .hide{display:none!important}
+.vi{display:block;color:var(--mute);font-size:14px;font-weight:400;margin-top:3px}
+.q .vi{font-size:15px;margin-top:6px}
+body.novi .vi{display:none}
+.vt{border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:99px;padding:3px 10px;font:600 12px system-ui;float:right;margin-top:-2px}
 </style>
 </head>
 <body>
 <header>
-  <h1><span class="flag"></span>Leben in Deutschland</h1>
+  <h1><span class="flag"></span>Leben in Deutschland <button class="vt" id="vt"></button></h1>
   <div class="sub">310 câu chính thức BAMF · 300 chung + 10 Baden-Württemberg</div>
   <nav>
     <button data-v="home" class="on">Tổng quan</button>
@@ -90,6 +94,11 @@ const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 const label=q=>q.bw?`BW ${q.n}`:`Câu ${q.n}`;
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const L='ABCD';
+const vq=q=>q.vq?`<span class="vi">${esc(q.vq)}</span>`:'';
+const vo=(q,i)=>q.vo&&q.vo[i]?`<span class="vi">${esc(q.vo[i])}</span>`:'';
+let VI=store.get('vi',true);
+const setVI=()=>{document.body.classList.toggle('novi',!VI);$('#vt').textContent=VI?'🇻🇳 Dịch: Bật':'🇻🇳 Dịch: Tắt'};
+$('#vt').onclick=()=>{VI=!VI;store.set('vi',VI);setVI()};setVI();
 
 function nav(v){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));bar.classList.add('hide');clearInterval(timer);window.scrollTo(0,0);({home,practice,exam,list})[v]()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));
@@ -155,9 +164,9 @@ function showP(){
   app.innerHTML=`<div class="card">
    <div class="row" style="justify-content:space-between"><span class="row"><span class="chip ${q.bw?'bw':''}">${label(q)}</span>${S[q.id]?`<span class="mute">${S[q.id].r}✓ ${S[q.id].w}✗</span>`:''}</span><span class="mute">${P.i+1}/${P.list.length}</span></div>
    <div class="prog"><i style="width:${(P.i+1)/P.list.length*100}%"></i></div>
-   <div class="q">${esc(q.q)}</div>
+   <div class="q">${esc(q.q)}${vq(q)}</div>
    ${q.img?`<img class="qimg" src="${q.img}" alt="">`:''}
-   <div id="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+   <div id="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}${vo(q,i)}</span></button>`).join('')}</div>
    <div id="fb" class="mute" style="min-height:20px;margin-top:6px"></div>
   </div>`;
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answerP(+b.dataset.i));
@@ -198,9 +207,9 @@ function showE(){
   const q=E.qs[E.i],a=E.ans[E.i];
   app.innerHTML=`<div class="card">
    <div class="row" style="justify-content:space-between"><span class="chip ${q.bw?'bw':''}">Câu ${E.i+1}/33 · ${label(q)}</span><b id="tm"></b></div>
-   <div class="q">${esc(q.q)}</div>
+   <div class="q">${esc(q.q)}${vq(q)}</div>
    ${q.img?`<img class="qimg" src="${q.img}" alt="">`:''}
-   ${q.o.map((o,i)=>`<button class="opt ${a===i?'pick':''}" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}</span></button>`).join('')}
+   ${q.o.map((o,i)=>`<button class="opt ${a===i?'pick':''}" data-i="${i}"><span class="k">${L[i]}</span><span>${esc(o)}${vo(q,i)}</span></button>`).join('')}
    <div class="grid33">${E.qs.map((_,k)=>`<button data-k="${k}" class="${E.ans[k]!==null?'d':''} ${k===E.i?'cur':''}">${k+1}</button>`).join('')}</div>
   </div>`;
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{E.ans[E.i]=+b.dataset.i;if(E.i<32){E.i++;}showE()});
@@ -219,17 +228,17 @@ function finishE(){
   const res=r>=17?['pass','Đậu cả Einbürgerungstest (≥17)']:r>=15?['pass','Đậu Leben in Deutschland (≥15)']:['fail','Chưa đậu (cần ≥15)'];
   app.innerHTML=`<div class="card" style="text-align:center"><div class="big ${res[0]}">${r}/33</div><b class="${res[0]}">${res[1]}</b>
    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px"><button class="btn gold" onclick="newExam()">Thi lại</button><button class="btn ghost" onclick="nav('home')">Tổng quan</button></div></div>
-   <div class="card list"><b>Xem lại</b>${E.qs.map((q,k)=>{const ok=E.ans[k]===q.a;return `<div class="item"><div class="row"><span class="chip ${q.bw?'bw':''}">${k+1} · ${label(q)}</span><b class="${ok?'pass':'fail'}">${ok?'✓':'✗'}</b></div><div style="margin-top:6px">${esc(q.q)}</div>${q.img?`<img src="${q.img}" alt="">`:''}${!ok?`<div class="mute" style="margin-top:4px">Bạn chọn: ${E.ans[k]===null?'—':esc(q.o[E.ans[k]])}</div>`:''}<div class="ans">✓ ${esc(q.o[q.a])}</div></div>`}).join('')}</div>`;
+   <div class="card list"><b>Xem lại</b>${E.qs.map((q,k)=>{const ok=E.ans[k]===q.a;return `<div class="item"><div class="row"><span class="chip ${q.bw?'bw':''}">${k+1} · ${label(q)}</span><b class="${ok?'pass':'fail'}">${ok?'✓':'✗'}</b></div><div style="margin-top:6px">${esc(q.q)}${vq(q)}</div>${q.img?`<img src="${q.img}" alt="">`:''}${!ok?`<div class="mute" style="margin-top:4px">Bạn chọn: ${E.ans[k]===null?'—':esc(q.o[E.ans[k]])}</div>`:''}<div class="ans">✓ ${esc(q.o[q.a])}${vo(q,q.a)}</div></div>`}).join('')}</div>`;
 }
 
 /* ---------- Tra cứu ---------- */
 function list(){
-  app.innerHTML=`<div class="card"><input type="search" id="s" placeholder="Tìm từ khoá hoặc số câu…"><div class="seg" style="margin-top:10px" id="lf"><button data-f="all" class="on">Tất cả</button><button data-f="wrong">Câu sai</button><button data-f="bw">Baden-Württ.</button></div></div><div class="card list" id="res"></div>`;
+  app.innerHTML=`<div class="card"><input type="search" id="s" placeholder="Tìm từ khoá (Đức/Việt) hoặc số câu…"><div class="seg" style="margin-top:10px" id="lf"><button data-f="all" class="on">Tất cả</button><button data-f="wrong">Câu sai</button><button data-f="bw">Baden-Württ.</button></div></div><div class="card list" id="res"></div>`;
   let f='all';const s=$('#s');
   const render=()=>{const t=s.value.trim().toLowerCase();let l=Q;
     if(f==='wrong')l=l.filter(q=>S[q.id]&&S[q.id].last===0);if(f==='bw')l=l.filter(q=>q.bw);
-    if(t)l=l.filter(q=>/^\d+$/.test(t)?String(q.n)===t:(q.q+' '+q.o.join(' ')).toLowerCase().includes(t));
-    $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}</div></div>`).join(''):'<span class="mute">Không có kết quả</span>'};
+    if(t)l=l.filter(q=>/^\d+$/.test(t)?String(q.n)===t:(q.q+' '+q.o.join(' ')+' '+(q.vq||'')+' '+(q.vo||[]).join(' ')).toLowerCase().includes(t));
+    $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}${vq(q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}${vo(q,q.a)}</div></div>`).join(''):'<span class="mute">Không có kết quả</span>'};
   s.oninput=render;app.querySelectorAll('#lf button').forEach(b=>b.onclick=()=>{f=b.dataset.f;app.querySelectorAll('#lf button').forEach(x=>x.classList.toggle('on',x===b));render()});render();
 }
 home();
