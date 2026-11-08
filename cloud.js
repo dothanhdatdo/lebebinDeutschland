@@ -4,8 +4,10 @@ const V = '10.12.2', base = `https://www.gstatic.com/firebasejs/${V}/`;
 const ui = window.CloudUI;
 if (!cfg) { ui.set({ enabled: false }); }
 else {
-  const [{ initializeApp }, A, F] = await Promise.all([
-    import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
+  let mods;
+  try { mods = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]); }
+  catch (e) { ui.set({ enabled: true, user: null, error: 'Không tải được Firebase (kiểm tra mạng).' }); throw e; }
+  const [{ initializeApp }, A, F] = mods;
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
   const provider = new A.GoogleAuthProvider();
   let user = null, timer = null, ready = false;

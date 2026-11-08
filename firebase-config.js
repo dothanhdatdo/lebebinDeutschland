@@ -1,13 +1,10 @@
-// Dán cấu hình Firebase của bạn vào đây (Firebase Console → Project settings → Your apps → Web app → SDK setup and configuration → Config).
-// Để null thì app vẫn chạy bình thường, chỉ không có đăng nhập Google / đồng bộ.
-window.FIREBASE_CONFIG = null;
-/* Ví dụ:
+// Cấu hình Firebase (không phải mật khẩu — dữ liệu được bảo vệ bằng firestore.rules)
 window.FIREBASE_CONFIG = {
-  apiKey: "AIza...",
-  authDomain: "ten-project.firebaseapp.com",
-  projectId: "ten-project",
-  storageBucket: "ten-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123"
+  apiKey: "AIzaSyBmmBTsOgyR8FcGmSo2tsjpSNWxqccaSTo",
+  authDomain: "leben-in-deutschland-7ac7d.firebaseapp.com",
+  projectId: "leben-in-deutschland-7ac7d",
+  storageBucket: "leben-in-deutschland-7ac7d.firebasestorage.app",
+  messagingSenderId: "907747567417",
+  appId: "1:907747567417:web:f991c92b61580aa9ef2ae8",
+  measurementId: "G-C5TFQKMVBE"
 };
-*/
