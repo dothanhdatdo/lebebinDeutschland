@@ -105,6 +105,7 @@ const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 const label=q=>q.bw?`BW ${q.n}`:`Câu ${q.n}`;
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const L='ABCD';
+const tipHTML=q=>q.t?`<div style="margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--sel);color:var(--ink);font-size:14px">💡 ${esc(q.t)}</div>`:'';
 const vq=q=>q.vq?`<span class="vi">${esc(q.vq)}</span>`:'';
 const vo=(q,i)=>q.vo&&q.vo[i]?`<span class="vi">${esc(q.vo[i])}</span>`:'';
 let VI=store.get('vi',true);
@@ -132,6 +133,7 @@ function home(){
   <div class="card">
     <b>Bắt đầu nhanh</b>
     <div style="display:grid;gap:8px;margin-top:10px">
+      <button class="btn gold" onclick="startPractice('quick')">⚡ Học nhanh: ${Q.filter(q=>q.k).length} câu kèm mẹo nhớ</button>
       <button class="btn" onclick="startPractice('new')">Luyện câu chưa làm (${Q.length-seen})</button>
       <button class="btn ghost" onclick="startPractice('wrong')" ${wrong?'':'disabled'}>Ôn lại câu sai (${wrong})</button>
       <button class="btn gold" onclick="nav('exam')">Thi thử 33 câu</button>
@@ -150,7 +152,7 @@ function home(){
 /* ---------- Luyện ---------- */
 let P={mode:'order',list:[],i:0,answered:null,right:0};
 function practice(){
-  const modes=[['order','Theo thứ tự'],['random','Ngẫu nhiên'],['new','Chưa làm'],['wrong','Câu sai'],['bw','Baden-Württ.']];
+  const modes=[['quick','⚡ Học nhanh'],['order','Theo thứ tự'],['random','Ngẫu nhiên'],['new','Chưa làm'],['wrong','Câu sai'],['bw','Baden-Württ.']];
   app.innerHTML=`<div class="card"><b>Chọn cách luyện</b><div class="seg" style="margin-top:10px">${modes.map(([k,t])=>`<button data-m="${k}" class="${P.mode===k?'on':''}">${t}</button>`).join('')}</div>
   <div id="fromWrap" class="row" style="margin-top:12px"><span class="mute">Bắt đầu từ câu</span><input id="from" type="number" min="1" max="300" value="${store.get('pos',1)}" style="width:90px;padding:8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit"></div>
   <button class="btn" style="width:100%;margin-top:12px" id="go">Bắt đầu</button></div>`;
@@ -164,6 +166,7 @@ function startPractice(mode,from=1){
   if(mode==='new')l=Q.filter(q=>!S[q.id]);
   if(mode==='wrong')l=shuffle(Q.filter(q=>S[q.id]&&S[q.id].last===0));
   if(mode==='bw')l=Q.filter(q=>q.bw);
+  if(mode==='quick')l=Q.filter(q=>q.k);
   P.list=l;P.i=0;P.right=0;
   if(mode==='order'){const k=Q.findIndex(q=>!q.bw&&q.n===from);P.i=k<0?0:k}
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==='practice'));
@@ -185,7 +188,7 @@ function showP(){
   bar.classList.remove('hide');
   bar.innerHTML=`<button class="btn ghost" id="prev" ${P.i?'':'disabled'}>‹ Trước</button><button class="btn ghost" id="show">Xem đáp án</button><button class="btn" id="next">Tiếp ›</button>`;
   $('#prev').onclick=()=>{P.i--;showP()};
-  $('#show').onclick=()=>reveal(q,null);
+  $('#show').onclick=()=>{reveal(q,null);if(P.answered===null){P.answered=-1;$('#fb').innerHTML=tipHTML(q)}};
   $('#next').onclick=nextP;
 }
 function reveal(q,pick){
@@ -195,7 +198,9 @@ function answerP(i){
   if(P.answered!==null)return;const q=P.list[P.i];P.answered=i;const ok=i===q.a;
   mark(q.id,ok);if(ok)P.right++;reveal(q,i);
   $('#fb').innerHTML=ok?'<b style="color:var(--ok)">Đúng rồi!</b>':`<b style="color:var(--bad)">Sai.</b> Đáp án đúng: <b>${L[q.a]}</b>`;
-  if(ok&&store.get('auto',true))setTimeout(()=>{if(P.answered===i&&P.list[P.i]===q)nextP()},700);
+  if(q.t)$('#fb').innerHTML+=tipHTML(q);
+  setTimeout(()=>$('#fb').scrollIntoView({block:'nearest',behavior:'smooth'}),50);
+  if(ok&&store.get('auto',true)&&!q.t)setTimeout(()=>{if(P.answered===i&&P.list[P.i]===q)nextP()},700);
 }
 function nextP(){
   if(P.i<P.list.length-1){P.i++;showP();window.scrollTo(0,0)}
@@ -245,12 +250,12 @@ function finishE(){
 
 /* ---------- Tra cứu ---------- */
 function list(){
-  app.innerHTML=`<div class="card"><input type="search" id="s" placeholder="Tìm từ khoá (Đức/Việt) hoặc số câu…"><div class="seg" style="margin-top:10px" id="lf"><button data-f="all" class="on">Tất cả</button><button data-f="wrong">Câu sai</button><button data-f="bw">Baden-Württ.</button></div></div><div class="card list" id="res"></div>`;
+  app.innerHTML=`<div class="card"><input type="search" id="s" placeholder="Tìm từ khoá (Đức/Việt) hoặc số câu…"><div class="seg" style="margin-top:10px" id="lf"><button data-f="all" class="on">Tất cả</button><button data-f="wrong">Câu sai</button><button data-f="bw">Baden-Württ.</button><button data-f="quick">⚡ Có mẹo</button></div></div><div class="card list" id="res"></div>`;
   let f='all';const s=$('#s');
   const render=()=>{const t=s.value.trim().toLowerCase();let l=Q;
-    if(f==='wrong')l=l.filter(q=>S[q.id]&&S[q.id].last===0);if(f==='bw')l=l.filter(q=>q.bw);
+    if(f==='wrong')l=l.filter(q=>S[q.id]&&S[q.id].last===0);if(f==='bw')l=l.filter(q=>q.bw);if(f==='quick')l=l.filter(q=>q.k);
     if(t)l=l.filter(q=>/^\d+$/.test(t)?String(q.n)===t:(q.q+' '+q.o.join(' ')+' '+(q.vq||'')+' '+(q.vo||[]).join(' ')).toLowerCase().includes(t));
-    $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}${vq(q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}${vo(q,q.a)}</div></div>`).join(''):'<span class="mute">Không có kết quả</span>'};
+    $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}${vq(q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}${vo(q,q.a)}</div>${tipHTML(q)}</div>`).join(''):'<span class="mute">Không có kết quả</span>'};
   s.oninput=render;app.querySelectorAll('#lf button').forEach(b=>b.onclick=()=>{f=b.dataset.f;app.querySelectorAll('#lf button').forEach(x=>x.classList.toggle('on',x===b));render()});render();
 }
 home();
