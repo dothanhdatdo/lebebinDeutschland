@@ -19,7 +19,7 @@ header h1{margin:0;font-size:17px;letter-spacing:.2px}
 header .sub{font-size:12px;opacity:.75}
 .flag{display:inline-block;width:18px;height:12px;vertical-align:-1px;margin-right:6px;background:linear-gradient(#000 33%,#dd0000 33% 66%,#ffce00 66%);border-radius:2px}
 nav{display:flex;gap:6px;margin-top:10px;overflow-x:auto}
-nav button{flex:1;min-width:0;border:0;border-radius:10px;padding:9px 6px;font:600 14px system-ui;background:rgba(255,255,255,.12);color:#fff;white-space:nowrap}
+nav button{flex:1;min-width:max-content;border:0;border-radius:10px;padding:9px 6px;font:600 14px system-ui;background:rgba(255,255,255,.12);color:#fff;white-space:nowrap}
 nav button.on{background:#fff;color:#1d2b4f}
 main{max-width:720px;margin:0 auto;padding:16px 16px 100px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
@@ -74,6 +74,7 @@ body.novi .vi{display:none}
     <button data-v="home" class="on">Tổng quan</button>
     <button data-v="practice">Luyện</button>
     <button data-v="exam">Thi thử</button>
+    <button data-v="listen">🎧 Nghe</button>
     <button data-v="list">Tra cứu</button>
   </nav>
 </header>
@@ -112,7 +113,7 @@ let VI=store.get('vi',true);
 const setVI=()=>{document.body.classList.toggle('novi',!VI);$('#vt').textContent=VI?'🇻🇳 Dịch: Bật':'🇻🇳 Dịch: Tắt'};
 $('#vt').onclick=()=>{VI=!VI;store.set('vi',VI);setVI()};setVI();
 
-function nav(v){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));bar.classList.add('hide');clearInterval(timer);window.scrollTo(0,0);({home,practice,exam,list})[v]()}
+function nav(v){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));bar.classList.add('hide');clearInterval(timer);window.scrollTo(0,0);if(v!=='listen'&&typeof stopListen==='function')stopListen();({home,practice,exam,list,listen})[v]()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.v));
 
 /* ---------- Tổng quan ---------- */
@@ -257,6 +258,79 @@ function list(){
     if(t)l=l.filter(q=>/^\d+$/.test(t)?String(q.n)===t:(q.q+' '+q.o.join(' ')+' '+(q.vq||'')+' '+(q.vo||[]).join(' ')).toLowerCase().includes(t));
     $('#res').innerHTML=l.length?l.slice(0,400).map(q=>`<div class="item"><span class="chip ${q.bw?'bw':''}">${label(q)}</span><div style="margin-top:6px">${esc(q.q)}${vq(q)}</div>${q.img?`<img src="${q.img}" loading="lazy" alt="">`:''}<div class="ans">✓ ${L[q.a]}. ${esc(q.o[q.a])}${vo(q,q.a)}</div>${tipHTML(q)}</div>`).join(''):'<span class="mute">Không có kết quả</span>'};
   s.oninput=render;app.querySelectorAll('#lf button').forEach(b=>b.onclick=()=>{f=b.dataset.f;app.querySelectorAll('#lf button').forEach(x=>x.classList.toggle('on',x===b));render()});render();
+}
+/* ---------- Nghe (đọc to bằng giọng của máy) ---------- */
+const SS=window.speechSynthesis;
+let LS=Object.assign({set:'quick',vi:true,opts:false,think:3,rate:1,i:0},store.get('listen',{}));
+let playing=false,runId=0,wakeLock=null;
+const saveLS=()=>store.set('listen',LS,1);
+const voiceFor=lang=>{const v=SS?SS.getVoices():[];return v.find(x=>x.lang&&x.lang.toLowerCase().replace('_','-').startsWith(lang))||null};
+const clean=t=>(t||'').replace(/…|\.\.\./g,' ').replace(/\s+/g,' ').trim();
+function say(text,lang,id){return new Promise(res=>{
+  if(!text||id!==runId)return res();
+  const u=new SpeechSynthesisUtterance(clean(text));const v=voiceFor(lang);
+  u.lang=lang==='de'?'de-DE':'vi-VN';if(v)u.voice=v;u.rate=LS.rate;
+  let done=false;const fin=()=>{if(!done){done=true;clearTimeout(t);res()}};
+  const t=setTimeout(fin,Math.max(8000,text.length*180/LS.rate));
+  u.onend=fin;u.onerror=fin;SS.speak(u);});}
+const wait=(ms,id)=>new Promise(r=>{const s=Date.now();const k=setInterval(()=>{if(id!==runId||Date.now()-s>=ms){clearInterval(k);r()}},100)});
+function listenList(){
+  if(LS.set==='quick')return Q.filter(q=>q.k);
+  if(LS.set==='wrong')return Q.filter(q=>S[q.id]&&S[q.id].last===0);
+  if(LS.set==='bw')return Q.filter(q=>q.bw);
+  return Q;
+}
+async function keepAwake(on){try{if(on&&'wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>wakeLock=null)}if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&playing)keepAwake(true)});
+function stopListen(){runId++;playing=false;if(SS)SS.cancel();keepAwake(false)}
+async function playFrom(){
+  const id=++runId;playing=true;keepAwake(true);renderListen();
+  const hasVi=!!voiceFor('vi');
+  while(id===runId){
+    const l=listenList();if(!l.length){stopListen();renderListen();return}
+    if(LS.i>=l.length)LS.i=0;const q=l[LS.i];saveLS();renderListen();
+    await say((q.bw?'Baden-Württemberg, Frage ':'Frage ')+q.n+'. '+q.q,'de',id);
+    if(LS.vi&&hasVi)await say(q.vq,'vi',id);
+    if(LS.opts)for(let k=0;k<4;k++){await say(L[k]+'. '+q.o[k],'de',id)}
+    await wait(LS.think*1000,id);
+    await say('Antwort: '+q.o[q.a],'de',id);
+    if(LS.vi&&hasVi&&q.vo&&q.vo[q.a])await say('Đáp án: '+q.vo[q.a],'vi',id);
+    if(LS.vi&&hasVi&&q.t)await say('Mẹo: '+q.t,'vi',id);
+    await wait(1200,id);
+    if(id!==runId)return;
+    LS.i=(LS.i+1)%l.length;
+  }
+}
+function skip(d){const l=listenList();LS.i=(LS.i+d+l.length)%Math.max(1,l.length);saveLS();if(playing){SS.cancel();playFrom()}else renderListen()}
+function listen(){renderListen();if(SS&&!SS.getVoices().length)SS.onvoiceschanged=()=>{if($('nav button.on')?.dataset.v==='listen')renderListen()}}
+function renderListen(){
+  if(!SS){app.innerHTML='<div class="card">Trình duyệt này không hỗ trợ đọc to. Hãy mở bằng Safari (iPhone) hoặc Chrome (Android).</div>';return}
+  const l=listenList(),q=l[Math.min(LS.i,l.length-1)],hasVi=!!voiceFor('vi'),hasDe=!!voiceFor('de');
+  const seg=(key,opts)=>`<div class="seg">${opts.map(([v,t])=>`<button data-k="${key}" data-v="${v}" class="${String(LS[key])===String(v)?'on':''}">${t}</button>`).join('')}</div>`;
+  app.innerHTML=`
+  <div class="card" style="text-align:center">
+    <div class="mute">${l.length?`${Math.min(LS.i,l.length-1)+1} / ${l.length}`:'Không có câu nào'}</div>
+    ${q?`<div class="row" style="justify-content:center;margin-top:6px"><span class="chip ${q.bw?'bw':''}">${label(q)}</span></div>
+    <div class="q" style="font-size:17px">${esc(q.q)}${vq(q)}</div>
+    <div class="ans" style="color:var(--ok);font-weight:600">✓ ${esc(q.o[q.a])}${vo(q,q.a)}</div>`:''}
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+      <button class="btn ghost" style="font-size:22px;padding:14px 20px" onclick="skip(-1)">⏮</button>
+      <button class="btn ${playing?'':'gold'}" style="font-size:22px;padding:14px 34px" onclick="playing?(stopListen(),renderListen()):playFrom()">${playing?'⏸':'▶'}</button>
+      <button class="btn ghost" style="font-size:22px;padding:14px 20px" onclick="skip(1)">⏭</button>
+    </div>
+  </div>
+  <div class="card" style="display:grid;gap:12px">
+    <div><b>Nghe bộ câu nào</b>${seg('set',[['quick','⚡ Học nhanh'],['all','Tất cả'],['wrong','Câu sai'],['bw','Baden-Württ.']])}</div>
+    <div><b>Đọc tiếng Việt</b> <span class="mute">(bản dịch + mẹo)</span>${seg('vi',[[true,'Có'],[false,'Không']])}</div>
+    <div><b>Đọc cả 4 đáp án</b> <span class="mute">(lâu hơn)</span>${seg('opts',[[false,'Không'],[true,'Có']])}</div>
+    <div><b>Thời gian nghĩ trước khi đọc đáp án</b>${seg('think',[[0,'0 giây'],[3,'3 giây'],[5,'5 giây'],[8,'8 giây']])}</div>
+    <div><b>Tốc độ đọc</b>${seg('rate',[[0.8,'Chậm'],[1,'Bình thường'],[1.2,'Nhanh']])}</div>
+  </div>
+  <div class="card mute" style="font-size:13px">
+    ${!hasDe?'⚠️ Máy chưa có giọng đọc tiếng Đức. ':''}${!hasVi?'⚠️ Máy chưa có giọng đọc tiếng Việt, nên app chỉ đọc phần tiếng Đức. Cài thêm giọng: iPhone → Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói; Android → Cài đặt → Chuyển văn bản thành giọng nói. ':''}
+    Khi đang nghe, app giữ màn hình luôn sáng. Nếu khoá màn hình hoặc chuyển sang app khác, máy sẽ ngừng đọc. Hãy bấm ▶ trước khi lái xe và để điện thoại trên giá đỡ.
+  </div>`;
+  app.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;let v=b.dataset.v;v=v==='true'?true:v==='false'?false:isNaN(+v)?v:+v;if(k==='set')LS.i=0;LS[k]=v;saveLS();if(playing&&(k==='set'||k==='vi'||k==='opts')){SS.cancel();playFrom()}else renderListen()});
 }
 home();
 </script>
